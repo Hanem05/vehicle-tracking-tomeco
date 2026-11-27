@@ -1,6 +1,6 @@
 # Docker setup
 
-This is a Laravel 12 parking violation system with Nginx, PHP-FPM, and a local PostgreSQL database in Docker. It includes vehicle QR tags, browser-based driver-license barcode scanning, ticket recording, Google Maps incident locations, private photo evidence, ticket status, role-based accounts, reports, a CSV export, an activity log, and a simple data-based forecast.
+This is a Laravel 12 parking violation system with Nginx, PHP-FPM, and a local PostgreSQL database in Docker. It includes vehicle QR tags, browser-based driver-license barcode scanning, ticket recording, Leaflet maps with OpenStreetMap tiles, private photo evidence, ticket status, role-based accounts, reports, a CSV export, an activity log, and a simple data-based forecast.
 
 ## Run locally
 
@@ -9,7 +9,9 @@ This is a Laravel 12 parking violation system with Nginx, PHP-FPM, and a local P
 3. Run `docker compose up --build -d`.
 4. Open <http://localhost:8080> and sign in with either developer admin account listed in `.env`.
 
-To use the incident map and location picker, set `GOOGLE_MAPS_API_KEY` in `.env` to a Google Maps JavaScript API key, enable that API in the associated Google Cloud project, then run `docker compose up -d app` to apply the setting. Restrict the browser key to the Maps JavaScript API and the app's HTTP referrer. Without a key, the rest of the ticket form works and the map panels explain what needs configuration.
+The incident picker and report map use OpenStreetMap tiles through Leaflet and need no API key. Defaults are in `.env.example`. To use another compatible tile provider, set both `MAP_TILE_URL` and `MAP_TILE_ATTRIBUTION` in `.env`, then run `docker compose up -d app`. Follow the provider's usage policy and keep its required attribution visible.
+
+The standard OpenStreetMap tile server is community-funded and best-effort, with no uptime guarantee. The maps request tiles only for the area a user is viewing. For sustained production traffic, configure a tile provider whose service terms fit the expected usage.
 
 The app waits for PostgreSQL to become healthy, runs database migrations and category seeding, then syncs exactly two local developer admin accounts from `.env`. Nginx serves the public files and sends PHP requests to the app container. Database data and Laravel's `storage` directory are kept in Docker volumes. The sync updates the two accounts' passwords from `.env` on each restart, so change these passwords in `.env` and restart the app when rotating them.
 
@@ -21,7 +23,7 @@ Use `docker compose logs -f app` to inspect startup errors. Use `docker compose 
 
 ## Configuration
 
-`compose.yaml` uses the `APP_KEY`, `DB_PASSWORD`, and optional `GOOGLE_MAPS_API_KEY` values from `.env`. Google Maps keys are sent to the user's browser, so restrict the key to Maps JavaScript API and your development/production HTTP referrers. The example database password is for local development only. Change it before putting the app on a shared network or server. If you change the password after the database volume has been initialized, update the existing PostgreSQL user password too; changing the Compose variable alone will not change that user.
+`compose.yaml` uses the `APP_KEY`, `DB_PASSWORD`, `MAP_TILE_URL`, and `MAP_TILE_ATTRIBUTION` values from `.env`. The example database password is for local development only. Change it before putting the app on a shared network or server. If you change the password after the database volume has been initialized, update the existing PostgreSQL user password too; changing the Compose variable alone will not change that user.
 
 The local `.env` file is excluded from Git and Docker build context. It contains plaintext secrets, so keep access to the workspace and Docker daemon limited to developers. Never copy the developer admin variables into a production deployment. The app does not call an external AI or cloud API; its trend and forecast calculations run in Laravel against PostgreSQL.
 

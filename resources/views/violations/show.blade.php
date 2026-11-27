@@ -15,7 +15,7 @@
             @if(auth()->user()->role !== 'viewer' && $violation->driver_name)<div><dt>Driver</dt><dd>{{ $violation->driver_name }}</dd></div>@endif
             @if(auth()->user()->role !== 'viewer' && $violation->driver_license_number)<div><dt>License number</dt><dd>{{ $violation->driver_license_number }}</dd></div>@endif
             <div><dt>Violation</dt><dd>{{ $violation->type?->name }}</dd></div>
-            <div><dt>Location</dt><dd>{{ $violation->location }} @if($violation->latitude !== null && $violation->longitude !== null)<br><a class="link" href="https://www.google.com/maps/search/?api=1&query={{ $violation->latitude }},{{ $violation->longitude }}" target="_blank" rel="noopener">Open coordinates in Google Maps ↗</a>@endif</dd></div>
+            <div><dt>Location</dt><dd>{{ $violation->location }} @if($violation->latitude !== null && $violation->longitude !== null)<br><a class="link" href="https://www.openstreetmap.org/?mlat={{ $violation->latitude }}&amp;mlon={{ $violation->longitude }}#map=18/{{ $violation->latitude }}/{{ $violation->longitude }}" target="_blank" rel="noopener">Open coordinates in OpenStreetMap ↗</a>@endif</dd></div>
             <div><dt>Occurred</dt><dd>{{ $violation->occurred_at->format('M j, Y g:i A') }}</dd></div>
             <div><dt>Penalty</dt><dd>₱{{ number_format($violation->penalty_amount, 2) }}</dd></div>
             <div><dt>Description</dt><dd>{{ $violation->description ?: '—' }}</dd></div>

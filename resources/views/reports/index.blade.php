@@ -27,16 +27,12 @@
     <section class="panel"><div class="panel-head"><div><p class="eyebrow">CATEGORY BREAKDOWN</p><h2>Violation types</h2></div></div>
         @forelse($byType as $row)<div class="rank-row"><span class="rank-number">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><span>{{ $row->name }}</span><strong>{{ $row->total }}</strong></div>@empty<p class="empty-small">No records in this selection.</p>@endforelse
     </section>
-    <section class="panel hotspot-map-panel">
-        <div class="panel-head"><div><p class="eyebrow">INCIDENT MAP</p><h2>Google Maps locations</h2></div><span class="map-count">{{ number_format($mapPointCount) }} mapped</span></div>
-        @if(config('services.google_maps.key'))
-            <div id="report-map" class="google-map report-map" data-google-map="report" data-maps-key="{{ config('services.google_maps.key') }}" aria-label="Google Map of reported parking violations"></div>
+    <section class="panel incident-map-panel">
+        <div class="panel-head"><div><p class="eyebrow">INCIDENT MAP</p><h2>OpenStreetMap locations</h2></div><span class="map-count">{{ number_format($mapPointCount) }} mapped</span></div>
+            <div id="report-map" class="leaflet-map report-map" data-leaflet-map="report" data-map-tile-url="{{ config('services.map.tile_url') }}" data-map-attribution="{{ config('services.map.attribution') }}" aria-label="OpenStreetMap view of reported parking violations"></div>
             <p class="chart-note" id="report-map-status" aria-live="polite">Loading map…</p>
             <script>window.tomecoReportMapPoints = @js($mapPoints);</script>
-        @else
-            <div class="map-setup-note"><strong>Google Maps is not configured yet.</strong><p>Add a restricted Google Maps JavaScript API key to <code>GOOGLE_MAPS_API_KEY</code> in `.env`, enable Maps JavaScript API, and restart the app container.</p></div>
             <p class="chart-note">{{ number_format($mapPointCount) }} ticket(s) have map coordinates. Tickets without a selected point will not appear on the map.</p>
-        @endif
     </section>
 </div>
 

@@ -35,8 +35,9 @@ return [
         ],
     ],
 
-    'google_maps' => [
-        'key' => env('GOOGLE_MAPS_API_KEY'),
+    'map' => [
+        'tile_url' => env('MAP_TILE_URL') ?: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'attribution' => env('MAP_TILE_ATTRIBUTION') ?: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     ],
 
 ];
