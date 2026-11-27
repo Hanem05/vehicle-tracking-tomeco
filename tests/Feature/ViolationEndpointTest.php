@@ -128,10 +128,11 @@ class ViolationEndpointTest extends TestCase
             ->assertSee('Subpoena review due')
             ->assertSee($due->ticket_number);
 
-        config(['services.google_maps.key' => 'test-maps-key']);
         $this->get(route('reports.index'))
             ->assertOk()
-            ->assertSee('Google Maps locations')
+            ->assertSee('OpenStreetMap locations')
+            ->assertSee('data-leaflet-map="report"', false)
+            ->assertSee('tile.openstreetmap.org')
             ->assertSee('window.tomecoReportMapPoints', false)
             ->assertSee('Downtown Tacloban');
     }

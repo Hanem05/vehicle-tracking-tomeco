@@ -6,7 +6,7 @@ A local web application for TOMECO parking violation records in Tacloban City. B
 
 - Vehicle registration and printable QR tags
 - QR lookup, driver-license QR/PDF417 scanning, and structured parking ticket forms
-- Google Maps incident pins and report locations
+- Leaflet incident pins and OpenStreetMap report locations
 - Private photo evidence and issued, paid, or appealed ticket status
 - Service-based 30-day appearance and 15-day payment follow-up, with an administrator review queue after day 45
 - Admin, enforcer, and viewer access levels
@@ -40,3 +40,5 @@ npm run build
 The CI workflow runs on every branch push and pull request. It runs PHP unit/domain tests, backend HTTP workflow tests, driver-license barcode parser tests, a Vite production build, and Docker builds for the PHP and Nginx images.
 
 The CD workflow runs only after CI succeeds for a push to `main`. It publishes the tested images to GitHub Container Registry (`ghcr.io`) with `latest` and commit-specific tags. It publishes images for deployment elsewhere; it does not deploy to a server.
+
+The map uses Leaflet with OpenStreetMap tiles and requires no API key. `MAP_TILE_URL` and `MAP_TILE_ATTRIBUTION` can be changed in `.env` to use another compatible provider; keep that provider's attribution visible on the map.

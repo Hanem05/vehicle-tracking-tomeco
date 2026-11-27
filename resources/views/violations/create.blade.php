@@ -50,16 +50,13 @@
         </div>
 
         <div class="form-section feature-section">
-            <div class="section-heading"><div><p class="eyebrow">INCIDENT LOCATION</p><h2>Pin it on Google Maps</h2></div></div>
+            <div class="section-heading"><div><p class="eyebrow">INCIDENT LOCATION</p><h2>Pin it on OpenStreetMap</h2></div></div>
             <p class="muted">Click the incident location on the map. The written location remains required for the ticket.</p>
-            @if(config('services.google_maps.key'))
-                <div id="incident-map" class="google-map map-picker" data-google-map="picker" data-maps-key="{{ config('services.google_maps.key') }}" data-lat="{{ old('latitude') }}" data-lng="{{ old('longitude') }}" aria-label="Select incident location on Google Maps"></div>
-                <div class="coordinate-row"><span id="incident-map-status">No map point selected.</span><button type="button" class="text-button" id="clear-incident-map">Clear map point</button></div>
-                <input type="hidden" name="latitude" id="incident-latitude" value="{{ old('latitude') }}">
-                <input type="hidden" name="longitude" id="incident-longitude" value="{{ old('longitude') }}">
-            @else
-                <div class="map-setup-note"><strong>Google Maps is not configured yet.</strong><p>Add a restricted Google Maps JavaScript API key to <code>GOOGLE_MAPS_API_KEY</code> in `.env`, then restart the app container.</p></div>
-            @endif
+            <div id="incident-map" class="leaflet-map map-picker" data-leaflet-map="picker" data-map-tile-url="{{ config('services.map.tile_url') }}" data-map-attribution="{{ config('services.map.attribution') }}" data-lat="{{ old('latitude') }}" data-lng="{{ old('longitude') }}" aria-label="Select incident location on OpenStreetMap"></div>
+            <p class="chart-note" id="incident-map-load-status" aria-live="polite">Loading OpenStreetMap tiles…</p>
+            <div class="coordinate-row"><span id="incident-map-status">No map point selected.</span><button type="button" class="text-button" id="clear-incident-map">Clear map point</button></div>
+            <input type="hidden" name="latitude" id="incident-latitude" value="{{ old('latitude') }}">
+            <input type="hidden" name="longitude" id="incident-longitude" value="{{ old('longitude') }}">
         </div>
 
         <div class="form-section feature-section">
