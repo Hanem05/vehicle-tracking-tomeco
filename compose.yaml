@@ -9,6 +9,7 @@ services:
       APP_KEY: ${APP_KEY:?Generate an APP_KEY in .env first}
       APP_DEBUG: "true"
       APP_URL: http://localhost:8080
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
       APP_TIMEZONE: Asia/Manila
       DB_CONNECTION: pgsql
       DB_HOST: db

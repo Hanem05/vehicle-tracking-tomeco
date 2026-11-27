@@ -1,0 +1,60 @@
+name: CD - Publish container images
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    branches:
+      - main
+    types:
+      - completed
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish-images:
+    name: Publish tested images to GitHub Container Registry
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the commit tested by CI
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image repository name
+        id: image
+        shell: bash
+        run: printf 'repository=ghcr.io/%s\n' "${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and publish PHP application image
+        uses: docker/build-push-action@v7.4.0
+        with:
+          context: .
+          target: app
+          push: true
+          tags: |
+            ${{ steps.image.outputs.repository }}-app:latest
+            ${{ steps.image.outputs.repository }}-app:sha-${{ github.event.workflow_run.head_sha }}
+
+      - name: Build and publish Nginx web image
+        uses: docker/build-push-action@v7.4.0
+        with:
+          context: .
+          target: web
+          push: true
+          tags: |
+            ${{ steps.image.outputs.repository }}-web:latest
+            ${{ steps.image.outputs.repository }}-web:sha-${{ github.event.workflow_run.head_sha }}

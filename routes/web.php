@@ -34,6 +34,7 @@ Route::middleware(['auth', 'role:admin,enforcer,viewer'])->group(function () {
 Route::middleware(['auth', 'role:admin,enforcer'])->group(function () {
     Route::get('/violations/create', [ViolationController::class, 'create'])->name('violations.create');
     Route::post('/violations', [ViolationController::class, 'store'])->name('violations.store');
+    Route::patch('/violations/{violation}/timeline', [ViolationController::class, 'updateTimeline'])->whereNumber('violation')->name('violations.timeline');
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
@@ -42,6 +43,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/vehicles/{vehicle}/edit', [VehicleController::class, 'edit'])->name('vehicles.edit');
     Route::put('/vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
     Route::patch('/violations/{violation}/status', [ViolationController::class, 'status'])->name('violations.status');
+    Route::patch('/violations/{violation}/subpoena-action', [ViolationController::class, 'recordSubpoenaAction'])->whereNumber('violation')->name('violations.subpoena-action');
     Route::get('/settings/types', [ViolationTypeController::class, 'index'])->name('types.index');
     Route::post('/settings/types', [ViolationTypeController::class, 'store'])->name('types.store');
     Route::put('/settings/types/{type}', [ViolationTypeController::class, 'update'])->name('types.update');
