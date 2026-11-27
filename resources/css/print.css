@@ -1,0 +1,5 @@
+@media print {
+    .report-filters, .form-actions, .text-button, .actions, .pagination { display: none !important; }
+    .two-col, .metrics { break-inside: avoid; }
+    body { background: #fff; }
+}

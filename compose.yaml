@@ -1,0 +1,63 @@
+services:
+  app:
+    build:
+      context: .
+      target: app
+    environment:
+      APP_NAME: "Parking Violation Monitor"
+      APP_ENV: local
+      APP_KEY: ${APP_KEY:?Generate an APP_KEY in .env first}
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8080
+      APP_TIMEZONE: Asia/Manila
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_DATABASE: parking_monitor
+      DB_USERNAME: parking_user
+      DB_PASSWORD: ${DB_PASSWORD:-local_dev_password}
+      SESSION_DRIVER: database
+      SESSION_LIFETIME: "30"
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+      DEV_ADMIN_1_EMAIL: ${DEV_ADMIN_1_EMAIL:?Set DEV_ADMIN_1_EMAIL in .env}
+      DEV_ADMIN_1_NAME: ${DEV_ADMIN_1_NAME:?Set DEV_ADMIN_1_NAME in .env}
+      DEV_ADMIN_1_PASSWORD: ${DEV_ADMIN_1_PASSWORD:?Set DEV_ADMIN_1_PASSWORD in .env}
+      DEV_ADMIN_2_EMAIL: ${DEV_ADMIN_2_EMAIL:?Set DEV_ADMIN_2_EMAIL in .env}
+      DEV_ADMIN_2_NAME: ${DEV_ADMIN_2_NAME:?Set DEV_ADMIN_2_NAME in .env}
+      DEV_ADMIN_2_PASSWORD: ${DEV_ADMIN_2_PASSWORD:?Set DEV_ADMIN_2_PASSWORD in .env}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - app_storage:/var/www/html/storage
+    command: ["sh", "-c", "php artisan migrate --force && php artisan db:seed --force && php artisan app:sync-dev-admins && php-fpm"]
+
+  web:
+    build:
+      context: .
+      target: web
+    ports:
+      - "8080:80"
+    depends_on:
+      - app
+    volumes:
+      - app_storage:/var/www/html/storage:ro
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: parking_monitor
+      POSTGRES_USER: parking_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-local_dev_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U parking_user -d parking_monitor"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
+  app_storage:

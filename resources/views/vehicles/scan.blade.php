@@ -1,0 +1,7 @@
+@extends('layouts.app')
+@section('title', 'Scan QR tag')
+@section('content')
+<div class="page-heading"><div><p class="eyebrow">FIELD ENFORCEMENT</p><h1>Scan a vehicle tag</h1><p class="muted">Use your camera or enter a QR code to start a violation record.</p></div></div>
+<div class="two-col scan-layout"><section class="panel"><div class="panel-head"><div><p class="eyebrow">CAMERA SCANNER</p><h2>Point at the QR tag</h2></div></div><div class="camera-box"><video id="qr-video" playsinline muted></video><div class="camera-overlay">Position the code within the frame</div></div><p id="scanner-message" class="muted">Camera access works on localhost or a secure HTTPS site.</p><button type="button" id="start-scanner" class="btn primary">Start camera</button><button type="button" id="stop-scanner" class="btn secondary" hidden>Stop camera</button></section>
+<section class="panel"><div class="panel-head"><div><p class="eyebrow">MANUAL LOOKUP</p><h2>Enter the tag code</h2></div></div><form method="post" action="{{ route('vehicles.lookup') }}" id="lookup-form" class="form-stack">@csrf<label>QR code or scanned link<input name="code" id="lookup-code" value="{{ old('code') }}" required placeholder="Paste the QR link or token"></label><button class="btn secondary">Find vehicle →</button></form><div class="hint-card"><strong>No QR tag yet?</strong><p>Admins can register vehicles and print their unique tag from the vehicle profile.</p><a class="link" href="{{ route('vehicles.index') }}">Browse vehicles →</a></div></section></div>
+@endsection
