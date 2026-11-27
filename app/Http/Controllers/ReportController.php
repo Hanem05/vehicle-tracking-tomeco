@@ -20,11 +20,30 @@ class ReportController extends Controller
         $hours = array_fill(0, 24, 0);
         foreach ((clone $query)->pluck('occurred_at') as $date) $hours[\Carbon\Carbon::parse($date)->hour]++;
         arsort($hours);
+        $mapPoints = (clone $query)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->orderByDesc('occurred_at')
+            ->get(['ticket_number', 'location', 'latitude', 'longitude', 'occurred_at'])
+            ->groupBy(fn ($violation) => number_format($violation->latitude, 5, '.', '').','.number_format($violation->longitude, 5, '.', ''))
+            ->map(fn ($group) => [
+                'position' => ['lat' => (float) $group->first()->latitude, 'lng' => (float) $group->first()->longitude],
+                'count' => $group->count(),
+                'location' => $group->first()->location,
+                'tickets' => $group->take(5)->map(fn ($violation) => [
+                    'number' => $violation->ticket_number,
+                    'location' => $violation->location,
+                    'date' => $violation->occurred_at->format('M j, Y'),
+                ])->values(),
+            ])->values();
+        $mapPointCount = $mapPoints->sum('count');
+
         return view('reports.index', [
             'total' => (clone $query)->count(),
             'byStatus' => (clone $query)->select('status', DB::raw('COUNT(*) as total'))->groupBy('status')->pluck('total', 'status'),
             'byType' => (clone $query)->join('violation_types', 'violations.violation_type_id', '=', 'violation_types.id')->select('violation_types.name', DB::raw('COUNT(*) as total'))->groupBy('violation_types.name')->orderByDesc('total')->get(),
-            'byLocation' => (clone $query)->select('location', DB::raw('COUNT(*) as total'))->groupBy('location')->orderByDesc('total')->limit(10)->get(),
+            'mapPoints' => $mapPoints,
+            'mapPointCount' => $mapPointCount,
             'byVehicleType' => (clone $query)->join('vehicles', 'violations.vehicle_id', '=', 'vehicles.id')->select('vehicles.vehicle_type', DB::raw('COUNT(*) as total'))->groupBy('vehicles.vehicle_type')->orderByDesc('total')->get(),
             'topHours' => array_slice($hours, 0, 6, true),
             'types' => ViolationType::orderBy('name')->get(),

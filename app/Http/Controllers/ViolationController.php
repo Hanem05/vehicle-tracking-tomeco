@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\CarbonImmutable;
 use App\Models\Vehicle;
 use App\Models\Violation;
 use App\Models\ViolationType;
@@ -39,11 +40,19 @@ class ViolationController extends Controller
             'vehicle_id' => ['required', 'exists:vehicles,id'],
             'violation_type_id' => ['required', 'exists:violation_types,id'],
             'location' => ['required', 'string', 'max:255'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'occurred_at' => ['required', 'date', 'before_or_equal:now'],
             'description' => ['nullable', 'string', 'max:3000'],
+            'driver_name' => ['nullable', 'string', 'max:255'],
+            'driver_license_number' => ['nullable', 'string', 'max:50', 'regex:/^[A-Za-z0-9 -]+$/'],
+            'notice_served_on' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
             'penalty_amount' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
             'evidence' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
+        if ($request->filled('latitude') !== $request->filled('longitude')) {
+            return back()->withErrors(['latitude' => 'Select a point on the map so both coordinates are recorded.'])->withInput();
+        }
         $type = ViolationType::findOrFail($data['violation_type_id']);
         abort_unless($type->is_active, 422, 'This violation type is inactive.');
         unset($data['evidence']);
@@ -54,6 +63,50 @@ class ViolationController extends Controller
         $violation = Violation::create($data);
         Audit::record('violation.created', $violation, $violation->ticket_number);
         return redirect()->route('violations.show', $violation)->with('success', 'Ticket issued.');
+    }
+
+    public function updateTimeline(Request $request, Violation $violation): RedirectResponse
+    {
+        $data = $request->validate([
+            'notice_served_on' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'appeared_on' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
+        ]);
+
+        if (filled($data['appeared_on'] ?? null) && blank($data['notice_served_on'] ?? null)) {
+            return back()->withErrors(['appeared_on' => 'Record the notice service date before recording an appearance.'])->withInput();
+        }
+
+        if (filled($data['appeared_on'] ?? null)
+            && CarbonImmutable::parse($data['appeared_on'])->lessThan(CarbonImmutable::parse($data['notice_served_on']))) {
+            return back()->withErrors(['appeared_on' => 'The appearance date cannot be before the notice service date.'])->withInput();
+        }
+
+        $violation->update($data);
+        Audit::record('violation.timeline_updated', $violation, 'served='.$violation->notice_served_on?->format('Y-m-d').'; appeared='.$violation->appeared_on?->format('Y-m-d'));
+
+        return back()->with('success', 'Notice and appearance dates updated.');
+    }
+
+    public function recordSubpoenaAction(Request $request, Violation $violation): RedirectResponse
+    {
+        $timeline = $violation->complianceTimeline();
+        if (! $timeline['subpoena_review_due']) {
+            return back()->withErrors(['subpoena_action_on' => 'This ticket is not yet eligible for subpoena review under the recorded timeline.']);
+        }
+
+        $data = $request->validate([
+            'subpoena_action_on' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'subpoena_reference' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        if (CarbonImmutable::parse($data['subpoena_action_on'])->lessThanOrEqualTo($timeline['payment_due_on'])) {
+            return back()->withErrors(['subpoena_action_on' => 'Record the action date only after the 45-day payment deadline.'])->withInput();
+        }
+
+        $violation->update($data + ['updated_by' => $request->user()->id]);
+        Audit::record('violation.subpoena_action_recorded', $violation, $data['subpoena_reference'] ?? null);
+
+        return back()->with('success', 'Subpoena action recorded.');
     }
 
     public function show(Violation $violation): View
