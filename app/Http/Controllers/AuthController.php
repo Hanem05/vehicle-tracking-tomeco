@@ -28,10 +28,23 @@ class AuthController extends Controller
             return back()->withErrors(['email' => 'These credentials could not be verified.'])->onlyInput('email');
         }
 
+        $user = Auth::user();
+        if (! in_array($user?->role, ['admin', 'enforcer'], true)) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            RateLimiter::clear($key);
+
+            return redirect()->route('login')->withErrors([
+                'email' => 'This account needs an Admin or Enforcer role. Ask an admin to update it.',
+            ])->withInput($request->only('email'));
+        }
+
         RateLimiter::clear($key);
         $request->session()->regenerate();
         Audit::record('login');
-        return redirect()->intended(route('dashboard'));
+
+        return redirect()->route($user->role === 'admin' ? 'admin.dashboard' : 'enforcer.dashboard');
     }
 
     public function logout(Request $request): RedirectResponse

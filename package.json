@@ -4,7 +4,7 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "test:frontend": "node --test tests/Frontend/license-scanner.test.js tests/Frontend/leaflet-maps.test.js"
+        "test:frontend": "node --test tests/Frontend/license-scanner.test.js tests/Frontend/leaflet-maps.test.js tests/Frontend/vehicle-qr.test.js"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

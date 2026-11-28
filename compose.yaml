@@ -8,7 +8,7 @@ services:
       APP_ENV: local
       APP_KEY: ${APP_KEY:?Generate an APP_KEY in .env first}
       APP_DEBUG: "true"
-      APP_URL: http://localhost:8080
+      APP_URL: ${APP_URL:-http://localhost:8080}
       MAP_TILE_URL: ${MAP_TILE_URL:-}
       MAP_TILE_ATTRIBUTION: ${MAP_TILE_ATTRIBUTION:-}
       APP_TIMEZONE: Asia/Manila

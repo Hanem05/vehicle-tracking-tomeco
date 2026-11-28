@@ -21,7 +21,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:12', 'confirmed'],
-            'role' => ['required', Rule::in(['admin', 'enforcer', 'viewer'])],
+            'role' => ['required', Rule::in(['admin', 'enforcer'])],
         ]);
         $data['is_active'] = true;
         $user = User::create($data);
@@ -35,7 +35,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:12', 'confirmed'],
-            'role' => ['required', Rule::in(['admin', 'enforcer', 'viewer'])],
+            'role' => ['required', Rule::in(['admin', 'enforcer'])],
             'is_active' => ['required', 'boolean'],
         ]);
         if ($user->is($request->user()) && ($data['role'] !== 'admin' || ! $data['is_active'])) {

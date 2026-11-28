@@ -64,8 +64,7 @@ class ViolationEndpointTest extends TestCase
         $this->get(route('violations.show', $violation))->assertOk()->assertSee('D1234567');
         $this->actingAs($this->user('viewer'))
             ->get(route('violations.show', $violation))
-            ->assertOk()
-            ->assertDontSee('D1234567');
+            ->assertForbidden();
     }
 
     public function test_ticket_endpoint_rejects_unpaired_map_coordinates_and_invalid_license_data(): void
@@ -123,7 +122,7 @@ class ViolationEndpointTest extends TestCase
             'location' => 'Downtown Tacloban',
         ]);
 
-        $this->actingAs($admin)->get(route('dashboard'))
+        $this->actingAs($admin)->get(route('admin.dashboard'))
             ->assertOk()
             ->assertSee('Subpoena review due')
             ->assertSee($due->ticket_number);

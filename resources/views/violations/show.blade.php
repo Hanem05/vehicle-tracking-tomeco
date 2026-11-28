@@ -12,8 +12,8 @@
         <div class="panel-head"><h2>Violation details</h2></div>
         <dl class="detail-list">
             <div><dt>Vehicle</dt><dd><a class="table-link" href="{{ route('vehicles.show', $violation->vehicle) }}">{{ $violation->vehicle?->plate_number }}</a></dd></div>
-            @if(auth()->user()->role !== 'viewer' && $violation->driver_name)<div><dt>Driver</dt><dd>{{ $violation->driver_name }}</dd></div>@endif
-            @if(auth()->user()->role !== 'viewer' && $violation->driver_license_number)<div><dt>License number</dt><dd>{{ $violation->driver_license_number }}</dd></div>@endif
+            @if($violation->driver_name)<div><dt>Driver</dt><dd>{{ $violation->driver_name }}</dd></div>@endif
+            @if($violation->driver_license_number)<div><dt>License number</dt><dd>{{ $violation->driver_license_number }}</dd></div>@endif
             <div><dt>Violation</dt><dd>{{ $violation->type?->name }}</dd></div>
             <div><dt>Location</dt><dd>{{ $violation->location }} @if($violation->latitude !== null && $violation->longitude !== null)<br><a class="link" href="https://www.openstreetmap.org/?mlat={{ $violation->latitude }}&amp;mlon={{ $violation->longitude }}#map=18/{{ $violation->latitude }}/{{ $violation->longitude }}" target="_blank" rel="noopener">Open coordinates in OpenStreetMap ↗</a>@endif</dd></div>
             <div><dt>Occurred</dt><dd>{{ $violation->occurred_at->format('M j, Y g:i A') }}</dd></div>
@@ -68,7 +68,7 @@
         <p class="empty-small">Record the date the notice was served to start the 30-day appearance and 15-day payment windows.</p>
     @endif
 
-    @if(in_array(auth()->user()->role, ['admin', 'enforcer'], true))
+    @if(auth()->user()->role === 'admin')
         <form method="post" action="{{ route('violations.timeline', $violation) }}" class="timeline-form">
             @csrf @method('PATCH')
             <label>Notice served on<input type="date" name="notice_served_on" value="{{ old('notice_served_on', $violation->notice_served_on?->toDateString()) }}" max="{{ now()->toDateString() }}"></label>
