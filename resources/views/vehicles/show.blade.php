@@ -1,8 +1,62 @@
 @extends('layouts.app')
 @section('title', $vehicle->plate_number)
 @section('content')
-<div class="page-heading"><div><p class="eyebrow">VEHICLE PROFILE</p><h1>{{ $vehicle->plate_number }}</h1><p class="muted">{{ $vehicle->vehicle_type }} @if($vehicle->make_model)· {{ $vehicle->make_model }}@endif</p></div><div class="actions">@if(auth()->user()->role === 'admin')<a class="btn secondary" href="{{ route('vehicles.edit', $vehicle) }}">Edit vehicle</a>@endif @if(auth()->user()->role !== 'viewer')<a class="btn primary" href="{{ route('violations.create', ['vehicle' => $vehicle->id]) }}">Issue ticket →</a>@endif</div></div>
-<div class="two-col vehicle-detail"><section class="panel"><div class="panel-head"><h2>Vehicle details</h2></div><dl class="detail-list"><div><dt>Owner</dt><dd>{{ $vehicle->owner_name }}</dd></div><div><dt>Contact</dt><dd>{{ $vehicle->owner_contact ?: '—' }}</dd></div><div><dt>Type</dt><dd>{{ $vehicle->vehicle_type }}</dd></div><div><dt>Make / model</dt><dd>{{ $vehicle->make_model ?: '—' }}</dd></div><div><dt>Color</dt><dd>{{ $vehicle->color ?: '—' }}</dd></div><div><dt>Registered</dt><dd>{{ $vehicle->created_at->format('M j, Y') }}</dd></div></dl></section>
-<section class="panel qr-panel"><div class="panel-head"><div><p class="eyebrow">UNIQUE VEHICLE TAG</p><h2>QR code</h2></div></div><img src="{{ route('vehicles.qr', $vehicle) }}" alt="QR code for {{ $vehicle->plate_number }}" class="qr-image"><p class="muted">Scan to open this vehicle in the violation form. The code contains a random identifier, not owner information.</p><button type="button" class="btn secondary" onclick="window.print()">Print tag</button></section></div>
-<section class="panel"><div class="panel-head"><h2>Violation history</h2><span class="muted">{{ $vehicle->violations->count() }} total</span></div><div class="table-wrap"><table><thead><tr><th>Ticket</th><th>Violation</th><th>Location</th><th>Status</th><th>Date</th></tr></thead><tbody>@forelse($vehicle->violations->sortByDesc('occurred_at') as $v)<tr><td><a class="table-link" href="{{ route('violations.show', $v) }}">{{ $v->ticket_number }}</a></td><td>{{ $v->type?->name }}</td><td>{{ $v->location }}</td><td><span class="badge {{ $v->status }}">{{ ucfirst($v->status) }}</span></td><td>{{ $v->occurred_at->format('M j, Y') }}</td></tr>@empty<tr><td colspan="5" class="empty-cell">No violations recorded for this vehicle.</td></tr>@endforelse</tbody></table></div></section>
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">VEHICLE PROFILE</p>
+        <h1>{{ $vehicle->plate_number }}</h1>
+        <p class="muted">{{ $vehicle->vehicle_type }} @if($vehicle->make_model) · {{ $vehicle->make_model }}@endif</p>
+    </div>
+    <div class="actions">
+        @if(auth()->user()->role === 'admin')
+            <a class="btn secondary" href="{{ route('vehicles.edit', $vehicle) }}">Edit vehicle</a>
+        @endif
+        <a class="btn primary" href="{{ route('violations.create', ['vehicle' => $vehicle->id]) }}">Issue ticket</a>
+    </div>
+</div>
+
+<div class="two-col vehicle-detail">
+    <section class="panel">
+        <div class="panel-head"><h2>Vehicle details</h2></div>
+        <dl class="detail-list">
+            <div><dt>Owner</dt><dd>{{ $vehicle->owner_name }}</dd></div>
+            <div><dt>Contact</dt><dd>{{ $vehicle->owner_contact ?: '—' }}</dd></div>
+            <div><dt>Type</dt><dd>{{ $vehicle->vehicle_type }}</dd></div>
+            <div><dt>Make / model</dt><dd>{{ $vehicle->make_model ?: '—' }}</dd></div>
+            <div><dt>Color</dt><dd>{{ $vehicle->color ?: '—' }}</dd></div>
+            <div><dt>Registered</dt><dd>{{ $vehicle->created_at->format('M j, Y') }}</dd></div>
+        </dl>
+    </section>
+
+    <section class="panel qr-panel">
+        <div class="panel-head">
+            <div><p class="eyebrow">UNIQUE VEHICLE TAG</p><h2>QR code</h2></div>
+        </div>
+        <img src="{{ route('vehicles.qr', $vehicle) }}" alt="QR code for {{ $vehicle->plate_number }}" class="qr-image">
+        <p class="muted">The owner can collect this QR card at the TOMECO office. Print it and hand it over in person.</p>
+        <a class="btn primary qr-print-button" href="{{ route('vehicles.qr-card', $vehicle) }}" target="_blank" rel="noopener">Print QR card</a>
+    </section>
+</div>
+
+<section class="panel">
+    <div class="panel-head"><h2>Violation history</h2><span class="muted">{{ $vehicle->violations->count() }} total</span></div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Ticket</th><th>Violation</th><th>Location</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody>
+            @forelse($vehicle->violations->sortByDesc('occurred_at') as $violation)
+                <tr>
+                    <td><a class="table-link" href="{{ route('violations.show', $violation) }}">{{ $violation->ticket_number }}</a></td>
+                    <td>{{ $violation->type?->name }}</td>
+                    <td>{{ $violation->location }}</td>
+                    <td><span class="badge {{ $violation->status }}">{{ ucfirst($violation->status) }}</span></td>
+                    <td>{{ $violation->occurred_at->format('M j, Y') }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="5" class="empty-cell">No violations recorded for this vehicle.</td></tr>
+            @endforelse
+            </tbody>
+        </table>
+    </div>
+</section>
 @endsection

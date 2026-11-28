@@ -82,7 +82,7 @@
             </div>
         </div>
 
-        <div class="form-actions"><button class="btn primary">Issue ticket</button><a class="btn secondary" href="{{ route('violations.index') }}">Cancel</a></div>
+        <div class="form-actions"><button class="btn primary">Issue ticket</button><a class="btn secondary" href="{{ auth()->user()->role === 'admin' ? route('violations.index') : route('enforcer.dashboard') }}">Cancel</a></div>
     </form>
 </section>
 @endsection
